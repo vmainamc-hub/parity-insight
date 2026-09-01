@@ -7,6 +7,7 @@
  */
 import { ParityCell, cellIdFor, observationKey } from "./cell";
 import type {
+  CanonicalParitySnapshot,
   CellObservation,
   ObservationIdentity,
   ParityCellSnapshot,
@@ -72,12 +73,23 @@ export class ParityCellRegistry {
   }
 }
 
+/**
+ * Build the exactly-once identity of one observation from the canonical
+ * snapshot's strongest available source identifiers (§7).
+ */
 export function makeObservationIdentity(
-  marketId: string,
+  source: Pick<CanonicalParitySnapshot, "symbol" | "analysisVersion" | "sourceTickId"> & {
+    digits?: readonly number[];
+    timestamp?: number;
+  },
   parity: Parity,
-  analysisVersion: number,
-  sourceTickId: string,
 ): ObservationIdentity {
+  const marketId = source.symbol;
+  const analysisVersion = source.analysisVersion;
+  const sourceTickId =
+    source.sourceTickId && source.sourceTickId.length > 0
+      ? source.sourceTickId
+      : fallbackSourceTickId(source.digits ?? [], source.timestamp ?? 0);
   return Object.freeze({
     marketId,
     parity,
