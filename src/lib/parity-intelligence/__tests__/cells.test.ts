@@ -1,4 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { ParityCell, cellIdFor, nextMaturity, scoreEvidence } from "../cells/cell";
+import {
+  ParityCellRegistry,
+  fallbackSourceTickId,
+  makeObservationIdentity,
+} from "../cells/registry";
+import { getEngineRole } from "../engine-registry";
+import type { CanonicalParitySnapshot } from "../types";
+import { ctx, evenEvidence, evidence, observation } from "./fixtures";
+
 describe("cell identity", () => {
   it("is permanent and derived from market + parity", () => {
     const cell = new ParityCell("R_100", "EVEN");
