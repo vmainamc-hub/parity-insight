@@ -101,9 +101,9 @@ export function observation(
 }
 
 const evenEvidence = [
-  evidence("Distribution Engine", "EVEN"),
-  evidence("Markov Engine", "EVEN"),
-  evidence("Pressure Engine", "EVEN"),
+  evidence("stats", "EVEN"),
+  evidence("markov", "EVEN"),
+  evidence("pressure", "EVEN"),
 ];
 
 describe("cell identity", () => {
@@ -212,13 +212,13 @@ describe("both cells persist independently", () => {
 
 describe("evidence scoring", () => {
   it("does not let correlated engines double-count", () => {
-    const single = scoreEvidence("EVEN", [evidence("Distribution Engine", "EVEN")]);
-    const groupA = getEngineRole("Distribution Engine").correlationGroup;
+    const single = scoreEvidence("EVEN", [evidence("stats", "EVEN")]);
+    const groupA = getEngineRole("stats").correlationGroup;
     const sibling = Object.values(
-      { s: evidence("Stats Engine", "EVEN") },
+      { s: evidence("multiHorizon", "EVEN") },
     )[0];
-    if (getEngineRole("Stats Engine").correlationGroup === groupA) {
-      const doubled = scoreEvidence("EVEN", [evidence("Distribution Engine", "EVEN"), sibling]);
+    if (getEngineRole("multiHorizon").correlationGroup === groupA) {
+      const doubled = scoreEvidence("EVEN", [evidence("stats", "EVEN"), sibling]);
       // Two correlated observers must not exceed the single-observer support.
       expect(doubled.supportScore).toBeLessThanOrEqual(single.supportScore + 0.001);
     }
@@ -229,10 +229,10 @@ describe("evidence scoring", () => {
     const direct = scoreEvidence("EVEN", evenEvidence);
     const withMeta = scoreEvidence("EVEN", [
       ...evenEvidence,
-      evidence("Danger Engine", "ODD"),
-      evidence("Timing Engine", "ODD"),
+      evidence("danger", "ODD"),
+      evidence("timing", "ODD"),
     ]);
-    const nonDirect = ["Danger Engine", "Timing Engine"].filter(
+    const nonDirect = ["danger", "timing"].filter(
       (e) => getEngineRole(e).authority !== "DIRECT",
     );
     if (nonDirect.length === 2) {
@@ -266,11 +266,11 @@ describe("contradictions", () => {
   it("records both supporting and opposing engines", () => {
     const cell = new ParityCell("R_100", "EVEN");
     cell.ingest(
-      observation("EVEN", 1, [...evenEvidence, evidence("Pattern Engine", "ODD")]),
+      observation("EVEN", 1, [...evenEvidence, evidence("pattern", "ODD")]),
     );
     const snap = cell.snapshot();
     expect(snap.engineAgreement.length).toBeGreaterThan(0);
-    expect(snap.engineDisagreement).toContain("Pattern Engine");
+    expect(snap.engineDisagreement).toContain("pattern");
   });
 });
 
